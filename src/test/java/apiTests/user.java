@@ -12,7 +12,10 @@ import static org.hamcrest.Matchers.stringContainsInOrder;
 
 public class user {
     String uri = "https://petstore.swagger.io/v2/user";
-    int userId = 2012;
+    int userId = 2119;
+    String username = "jsantos";
+    String password = "88833390";
+    String token = "";
 
      // Padrão
     // Given = Dado
@@ -24,8 +27,8 @@ public class user {
         return new String(Files.readAllBytes(Paths.get(caminhoJson)));
     }
 
-    @Test(priority = 0)
-    public void incluirUser() throws IOException {
+    @Test
+    public void incluirUsuario() throws IOException {
 
         String jsonBody = lerJson("src/test/resources/data/user.json");
 
@@ -44,21 +47,53 @@ public class user {
         ;
     }
 
-    @Test(priority = 1, dependsOnMethods = {"incluirUser"})
-    public void consultarUser(){
+    @Test
+    public void consultarUsuario(){
 
-       given()
+        given()
                 .contentType("application/json")
                 .log().all()
         .when()
-                .get(uri + "/" + userId)
+                .get(uri + "/" + username)
         .then()
-                .log().all()
+               .log().all()
+               .statusCode(200)
+               .body("id", is(userId))
+               .body("username", is(username))
+               .body("firstName", is("Julia"))
+               .body("lastName", is("Santos"))
+               .body("email", is("julisantos@test.com"))
+               .body("password", is("88833390"))
+               .body("phone", is("551198765354"))
+               .body("userStatus", is(0))
         ;
     }
+    @Test
+    public void login(){
 
-    @Test(priority = 2, dependsOnMethods = {"consultarUser"})
-    public void alterarUser() throws IOException {
+        String mensagem =
+        given()
+                .contentType("application/json")
+                .log().all()
+        .when()
+                .get(uri + "/login?username=" + username + "&password=" + password)
+        .then()
+                .log().all()
+                .statusCode(200)
+                .body("code", is(200))
+                .body("type", is("unknown"))
+        .extract()
+                .path("message")
+        ;
+
+        System.out.println("A mensagem e :" + mensagem);
+        token = mensagem.substring(23);
+        System.out.println("O token e :" + token);
+
+    }
+
+    @Test
+    public void alterarUsuario() throws IOException {
         String jsonBody = lerJson("src/test/resources/data/newuser.json");
 
         given()
@@ -72,8 +107,8 @@ public class user {
         ;
     }
 
-    @Test(priority = 3, dependsOnMethods = {"alterarUser"})
-    public void excluirUser(){
+    @Test
+    public void excluirUsuario(){
 
         given()
                 .contentType("application/json")
